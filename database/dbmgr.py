@@ -3,6 +3,15 @@
 module : dbmgr
 
 features firebase wrapper functions
+
+functions:
+    addOffender()
+    getOffender()
+    updateOffender()
+    removeOffender()
+    addCrassWord()
+    getCrassWord()
+    removeCrassWord()
 '''
 
 from firebase import firebase
@@ -56,10 +65,10 @@ inputs:
         returns all offenders)
 
 outputs:
-     : True if addition was successful,
-            False if name of offender already taken,
-            "ERROR" (string) in the case of connection
-            issue or authentication problem.
+     If found, returns dictionary representing an offender
+     (or dictionary of dictionaries of many offenders by name
+        if name was None, None if not found, and "ERROR" if 
+            connection/authentication issue)
 '''
 def getOffender(name=None):
     try:
@@ -68,36 +77,27 @@ def getOffender(name=None):
         return "ERROR"
 
 '''
-function: getOffender()
+function: updateOffender()
 
 description:
-    -Searches for an offender in the CRASS database from a name,
-    DEFAULT gets all offenders
+    -Updates the data for an offender in the CRASS database from a name,
 
 inputs: 
     name : name (string) of offender to look for (optional, if None,
         returns all offenders)
+    attr : dictionary of updated attributes (values) describing the offender
 
 outputs:
-     : True if addition was successful,
-            False if name of offender already taken,
+    status : True if update was successful,
+            False if selected offender not in database,
             "ERROR" (string) in the case of connection
             issue or authentication problem.
 '''
-def updateOffender(name=None):
-    try:
-        return fdb.get('/students/', name)
-    except HTTPError:
-        return "ERROR"
-
-#Updates the entry on the student with netid with the information
-#contained in Sdict. Returns True if successful, False if netid
-#not in database, and ERROR if connection issue
-def addTimesToStudent(netid, Sdict):
-    isPresent = getStudent(netid)
+def updateOffender(name, attr):
+    isPresent = getOffender(name)
     if (isPresent != None):
         try:
-            fdb.patch('/students/' + netid + "/freedict/", Sdict['freedict'])
+            fdb.patch('/offenders/' + name + "/attr/", attr)
             return True
         except HTTPError:
             return "ERROR"
@@ -106,14 +106,26 @@ def addTimesToStudent(netid, Sdict):
     else:
         return False
 
-#Updates the entry on the student with netid with the information
-#contained in Sdict. Returns True if successful, False if netid
-#not in database, and ERROR if connection issue
-def forceUpdateStudent(netid, Sdict):
-    isPresent = getStudent(netid)
+'''
+function: removeOffender()
+
+description:
+    -Removes an offender from the database by name
+
+inputs: 
+    name : name (string) of offender to delete
+    
+outputs:
+    status : True if delete was successful,
+            False if selected offender not in database,
+            "ERROR" (string) in the case of connection
+            issue or authentication problem.
+'''
+def removeOffender(name):
+    isPresent = getOffender(name)
     if (isPresent != None):
         try:
-            fdb.patch('/students/' + netid, Sdict)
+            fdb.delete('/offenders/' + name)
             return True
         except HTTPError:
             return "ERROR"
@@ -121,14 +133,27 @@ def forceUpdateStudent(netid, Sdict):
         return "ERROR"
     else:
         return False
-  
 
+'''
+function: addCrassWord()
 
-def addCourse(Cdict):
-    isPresent = getCourse(Cdict['name'])
+description:
+    -Adds a crass word (string) to the database.
+
+inputs: 
+    word : a string of the crass word to be added
+
+outputs:
+    status : True if addition was successful,
+            False if name of word already taken,
+            "ERROR" (string) in the case of connection
+            issue or authentication problem.
+'''
+def addCrassWord(word):
+    isPresent = getCrassWord(word)
     if (isPresent == None):
         try:
-            fdb.put('/courses/', Cdict['name'], Cdict)
+            fdb.put('/crasswords/', word, word)
             return True
         except HTTPError:
             return "ERROR"
@@ -137,24 +162,49 @@ def addCourse(Cdict):
     else:
         return False
 
-#Retrieve course information from the database by
-#name. default returns all courses. Returns a 
-#dictionary, None if not found, and "ERROR" if connection
-#issue ()
-def getCourse(name=None):
+'''
+function: getCrassWord()
+
+description:
+    -Searches for a crass word in the database from a name,
+    DEFAULT gets all crasswords
+
+inputs: 
+    word : name (string) of crassword to look for (optional, if None,
+        returns all crasswords)
+
+outputs:
+     If found, returns dictionary representing an offender
+     (or dictionary of dictionaries of many offenders by name
+        if name was None, None if not found, and "ERROR" if 
+            connection/authentication issue)
+'''
+def getCrassWord(word=None):
     try:
-        return fdb.get('/courses/', name)
+        return fdb.get('/crasswords/', word)
     except HTTPError:
         return "ERROR"
 
-#Updates the entry on the course with name with the information
-#contained in Cdict. Returns True if successful, False if netid
-#not in database, and ERROR if connection issue
-def updateCourse(name, Cdict):
-    isPresent = getCourse(name)
+'''
+function: removeOffender()
+
+description:
+    -Removes a crassword from the database by name
+
+inputs: 
+    word : name (string) of crassword to delete
+    
+outputs:
+    status : True if delete was successful,
+            False if selected crassword not in database,
+            "ERROR" (string) in the case of connection
+            issue or authentication problem.
+'''
+def removeCrassWord(word):
+    isPresent = getCrassWord(word)
     if (isPresent != None):
         try:
-            fdb.patch('/courses/' + name, Cdict)
+            fdb.delete('/crasswords/' + word)
             return True
         except HTTPError:
             return "ERROR"
