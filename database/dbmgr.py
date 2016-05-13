@@ -1,8 +1,25 @@
-
 '''
 module : dbmgr
 
-features firebase wrapper functions
+features firebase wrapper class called Dbmgr
+
+'''
+
+from firebase import firebase
+from requests import HTTPError
+from localcreds import get_credentials
+
+'''
+class: Dbmgr
+
+description:
+    - database manager class
+
+attributes:
+    fdb : instance of the FirebaseApplication class    
+
+initializer input:
+    None
 
 functions:
     addOffender()
@@ -14,207 +31,206 @@ functions:
     removeCrassWord()
 '''
 
-from firebase import firebase
-from requests import HTTPError
-from localcreds import get_credentials
+class Dbmgr():
+    def __init__(self):
+        #Authentication 
+        FIREBASE_URL = "https://crass.firebaseio.com/"
+        FIREBASE_KEY = get_credentials()
+        authentication = firebase.FirebaseAuthentication(FIREBASE_KEY, 'ilyakrasnovsky@gmail.com', admin = True)
+        self.fdb = firebase.FirebaseApplication(FIREBASE_URL, authentication=authentication)
 
-#Authentication 
-FIREBASE_URL = "https://crass.firebaseio.com/"
-FIREBASE_KEY = get_credentials()
-authentication = firebase.FirebaseAuthentication(FIREBASE_KEY, 'ilyakrasnovsky@gmail.com', admin = True)
-fdb = firebase.FirebaseApplication(FIREBASE_URL, authentication=authentication)
+    '''
+    function: addOffender()
 
-'''
-function: addOffender()
+    description:
+        -Adds an offender to the CRASS database from a dictionary
+        of values
 
-description:
-    -Adds an offender to the CRASS database from a dictionary
-    of values
+    inputs: 
+        Odict : A dictionary describing and offender to be added
 
-inputs: 
-    Odict : A dictionary describing and offender to be added
+    outputs:
+        status : True if addition was successful,
+                False if name of offender already taken,
+                "ERROR" (string) in the case of connection
+                issue or authentication problem.
+    '''
+    def addOffender(self,Odict):
+        isPresent = self.getOffender(Odict['name'])
+        if (isPresent == None):
+            try:
+                self.fdb.put('/offenders/', Odict['name'], Odict)
+                return True
+            except HTTPError:
+                return "ERROR"
+        elif (isPresent == "ERROR"):
+            return "ERROR"
+        else:
+            return False
 
-outputs:
-    status : True if addition was successful,
-            False if name of offender already taken,
-            "ERROR" (string) in the case of connection
-            issue or authentication problem.
-'''
-def addOffender(Odict):
-    isPresent = getOffender(Odict['name'])
-    if (isPresent == None):
+    '''
+    function: getOffender()
+
+    description:
+        -Searches for an offender in the CRASS database from a name,
+        DEFAULT gets all offenders
+
+    inputs: 
+        name : name (string) of offender to look for (optional, if None,
+            returns all offenders)
+
+    outputs:
+         If found, returns dictionary representing an offender
+         (or dictionary of dictionaries of many offenders by name
+            if name was None, None if not found, and "ERROR" if 
+                connection/authentication issue)
+    '''
+    def getOffender(self,name=None):
         try:
-            fdb.put('/offenders/', Odict['name'], Odict)
-            return True
+            return self.fdb.get('/offenders/', name)
         except HTTPError:
             return "ERROR"
-    elif (isPresent == "ERROR"):
-        return "ERROR"
-    else:
-        return False
 
-'''
-function: getOffender()
+    '''
+    function: updateOffender()
 
-description:
-    -Searches for an offender in the CRASS database from a name,
-    DEFAULT gets all offenders
+    description:
+        -Updates the data for an offender in the CRASS database from a name,
 
-inputs: 
-    name : name (string) of offender to look for (optional, if None,
-        returns all offenders)
+    inputs: 
+        name : name (string) of offender to look for (optional, if None,
+            returns all offenders)
+        attr : dictionary of updated attributes (values) describing the offender
 
-outputs:
-     If found, returns dictionary representing an offender
-     (or dictionary of dictionaries of many offenders by name
-        if name was None, None if not found, and "ERROR" if 
-            connection/authentication issue)
-'''
-def getOffender(name=None):
-    try:
-        return fdb.get('/offenders/', name)
-    except HTTPError:
-        return "ERROR"
+    outputs:
+        status : True if update was successful,
+                False if selected offender not in database,
+                "ERROR" (string) in the case of connection
+                issue or authentication problem.
+    '''
+    def updateOffender(self, name, attr):
+        isPresent = self.getOffender(name)
+        if (isPresent != None):
+            try:
+                self.fdb.patch('/offenders/' + name + "/attr/", attr)
+                return True
+            except HTTPError:
+                return "ERROR"
+        elif (isPresent == "ERROR"):
+            return "ERROR"
+        else:
+            return False
 
-'''
-function: updateOffender()
+    '''
+    function: removeOffender()
 
-description:
-    -Updates the data for an offender in the CRASS database from a name,
+    description:
+        -Removes an offender from the database by name
 
-inputs: 
-    name : name (string) of offender to look for (optional, if None,
-        returns all offenders)
-    attr : dictionary of updated attributes (values) describing the offender
+    inputs: 
+        name : name (string) of offender to delete
+        
+    outputs:
+        status : True if delete was successful,
+                False if selected offender not in database,
+                "ERROR" (string) in the case of connection
+                issue or authentication problem.
+    '''
+    def removeOffender(self, name):
+        isPresent = self.getOffender(name)
+        if (isPresent != None):
+            try:
+                self.fdb.delete('/offenders/', name)
+                return True
+            except HTTPError:
+                return "ERROR"
+        elif (isPresent == "ERROR"):
+            return "ERROR"
+        else:
+            return False
 
-outputs:
-    status : True if update was successful,
-            False if selected offender not in database,
-            "ERROR" (string) in the case of connection
-            issue or authentication problem.
-'''
-def updateOffender(name, attr):
-    isPresent = getOffender(name)
-    if (isPresent != None):
+    '''
+    function: addCrassWord()
+
+    description:
+        -Adds a crass word (string) to the database.
+
+    inputs: 
+        word : a string of the crass word to be added
+
+    outputs:
+        status : True if addition was successful,
+                False if name of word already taken,
+                "ERROR" (string) in the case of connection
+                issue or authentication problem.
+    '''
+    def addCrassWord(self, word):
+        isPresent = self.getCrassWord(word)
+        if (isPresent == None):
+            try:
+                self.fdb.put('/crasswords/', word, word)
+                return True
+            except HTTPError:
+                return "ERROR"
+        elif (isPresent == "ERROR"):
+            return "ERROR"
+        else:
+            return False
+
+    '''
+    function: getCrassWord()
+
+    description:
+        -Searches for a crass word in the database from a name,
+        DEFAULT gets all crasswords
+
+    inputs: 
+        word : name (string) of crassword to look for (optional, if None,
+            returns all crasswords)
+
+    outputs:
+         If found, returns the crassword
+         (or dictionary of many crasswords by name
+            if name was None, None if not found, and "ERROR" if 
+                connection/authentication issue)
+    '''
+    def getCrassWord(self, word=None):
         try:
-            fdb.patch('/offenders/' + name + "/attr/", attr)
-            return True
+            return self.fdb.get('/crasswords/', word)
         except HTTPError:
             return "ERROR"
-    elif (isPresent == "ERROR"):
-        return "ERROR"
-    else:
-        return False
 
-'''
-function: removeOffender()
+    '''
+    function: removeCrassWord()
 
-description:
-    -Removes an offender from the database by name
+    description:
+        -Removes a crassword from the database by name
 
-inputs: 
-    name : name (string) of offender to delete
-    
-outputs:
-    status : True if delete was successful,
-            False if selected offender not in database,
-            "ERROR" (string) in the case of connection
-            issue or authentication problem.
-'''
-def removeOffender(name):
-    isPresent = getOffender(name)
-    if (isPresent != None):
-        try:
-            fdb.delete('/offenders/', name)
-            return True
-        except HTTPError:
+    inputs: 
+        word : name (string) of crassword to delete
+        
+    outputs:
+        status : True if delete was successful,
+                False if selected crassword not in database,
+                "ERROR" (string) in the case of connection
+                issue or authentication problem.
+    '''
+    def removeCrassWord(self, word):
+        isPresent = self.getCrassWord(word)
+        if (isPresent != None):
+            try:
+                self.fdb.delete('/crasswords/', word)
+                return True
+            except HTTPError:
+                return "ERROR"
+        elif (isPresent == "ERROR"):
             return "ERROR"
-    elif (isPresent == "ERROR"):
-        return "ERROR"
-    else:
-        return False
-
-'''
-function: addCrassWord()
-
-description:
-    -Adds a crass word (string) to the database.
-
-inputs: 
-    word : a string of the crass word to be added
-
-outputs:
-    status : True if addition was successful,
-            False if name of word already taken,
-            "ERROR" (string) in the case of connection
-            issue or authentication problem.
-'''
-def addCrassWord(word):
-    isPresent = getCrassWord(word)
-    if (isPresent == None):
-        try:
-            fdb.put('/crasswords/', word, word)
-            return True
-        except HTTPError:
-            return "ERROR"
-    elif (isPresent == "ERROR"):
-        return "ERROR"
-    else:
-        return False
-
-'''
-function: getCrassWord()
-
-description:
-    -Searches for a crass word in the database from a name,
-    DEFAULT gets all crasswords
-
-inputs: 
-    word : name (string) of crassword to look for (optional, if None,
-        returns all crasswords)
-
-outputs:
-     If found, returns the crassword
-     (or dictionary of many crasswords by name
-        if name was None, None if not found, and "ERROR" if 
-            connection/authentication issue)
-'''
-def getCrassWord(word=None):
-    try:
-        return fdb.get('/crasswords/', word)
-    except HTTPError:
-        return "ERROR"
-
-'''
-function: removeCrassWord()
-
-description:
-    -Removes a crassword from the database by name
-
-inputs: 
-    word : name (string) of crassword to delete
-    
-outputs:
-    status : True if delete was successful,
-            False if selected crassword not in database,
-            "ERROR" (string) in the case of connection
-            issue or authentication problem.
-'''
-def removeCrassWord(word):
-    isPresent = getCrassWord(word)
-    if (isPresent != None):
-        try:
-            fdb.delete('/crasswords/', word)
-            return True
-        except HTTPError:
-            return "ERROR"
-    elif (isPresent == "ERROR"):
-        return "ERROR"
-    else:
-        return False
+        else:
+            return False
     
 #Tester client
 def main():
+    dbmgr1 = Dbmgr()
     ilya = {
         'name' : 'ilya',
         'attr' : {
@@ -244,33 +260,33 @@ def main():
     }
     
     print ("TESTING addOffender")
-    status = addOffender(ilya)
+    status = dbmgr1.addOffender(ilya)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))
-    status = addOffender(danny)
+    status = dbmgr1.addOffender(danny)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))
-    status = addOffender(hannah)
+    status = dbmgr1.addOffender(hannah)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))
-    status = addOffender(ilya)
+    status = dbmgr1.addOffender(ilya)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))
-    status = addOffender(danny)
+    status = dbmgr1.addOffender(danny)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))
-    status = addOffender(hannah)
+    status = dbmgr1.addOffender(hannah)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))
     
     print ("TESTING getOffender")
-    status = getOffender("ilya")
+    status = dbmgr1.getOffender("ilya")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(ilya))   
-    status = getOffender("danny")
+    status = dbmgr1.getOffender("danny")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(danny))   
-    status = getOffender("hannah")
+    status = dbmgr1.getOffender("hannah")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(hannah))   
-    status = getOffender("eric")
+    status = dbmgr1.getOffender("eric")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
-    status = getOffender("shirley")
+    status = dbmgr1.getOffender("shirley")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
     
     print ("TESTING getOffender WITH NO INPUT")
-    status = getOffender()
+    status = dbmgr1.getOffender()
     allOffenders = {
         "ilya" : ilya,
         "danny" : danny,
@@ -285,7 +301,7 @@ def main():
         'readability' : 1,
         'confidence' : 1   
     }
-    status = updateOffender("ilya", updateIlya)
+    status = dbmgr1.updateOffender("ilya", updateIlya)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
     updateDanny = {
         'speed' : 1,
@@ -293,7 +309,7 @@ def main():
         'readability' : 1,
         'confidence' : 1   
     }
-    status = updateOffender("danny", updateDanny)
+    status = dbmgr1.updateOffender("danny", updateDanny)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
     updateHannah = {
         'speed' : 2,
@@ -301,7 +317,7 @@ def main():
         'readability' : 2,
         'confidence' : 2 
     }
-    status = updateOffender("hannah", updateHannah)
+    status = dbmgr1.updateOffender("hannah", updateHannah)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
     updateEric = {
         'speed' : 2,
@@ -309,53 +325,53 @@ def main():
         'readability' : 2,
         'confidence' : 2   
     }
-    status = updateOffender("eric", updateEric)
+    status = dbmgr1.updateOffender("eric", updateEric)
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))   
     
-    print ("TESTING getOffender after updateOffender")
-    status = getOffender("ilya")
+    print ("TESTING getOffender after dbmgr1.updateOffender")
+    status = dbmgr1.getOffender("ilya")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(updateIlya))   
-    status = getOffender("danny")
+    status = dbmgr1.getOffender("danny")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(updateDanny))   
-    status = getOffender("hannah")
+    status = dbmgr1.getOffender("hannah")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(updateHannah))   
-    status = getOffender("eric")
+    status = dbmgr1.getOffender("eric")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
     
     print ("TESTING removeOffender")
-    status = removeOffender("ilya")
+    status = dbmgr1.removeOffender("ilya")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
-    status = removeOffender("danny")
+    status = dbmgr1.removeOffender("danny")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
-    status = removeOffender("eric")
+    status = dbmgr1.removeOffender("eric")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))   
     
     print ("TESTING getOffender after removeOffender")
-    status = getOffender("ilya")
+    status = dbmgr1.getOffender("ilya")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
-    status = getOffender("danny")
+    status = dbmgr1.getOffender("danny")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
-    status = getOffender("hannah")
+    status = dbmgr1.getOffender("hannah")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(updateHannah))   
-    status = getOffender("eric")
+    status = dbmgr1.getOffender("eric")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
     
     print ("TESTING addCrassWord")
-    status = addCrassWord("fuck")
+    status = dbmgr1.addCrassWord("fuck")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
-    status = addCrassWord("fuck")
+    status = dbmgr1.addCrassWord("fuck")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))   
-    status = addCrassWord("shit")
+    status = dbmgr1.addCrassWord("shit")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
     
     print ("TESTING getCrassWord")
-    status = getCrassWord("shit")
+    status = dbmgr1.getCrassWord("shit")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str("shit"))   
-    status = getCrassWord("lol")
+    status = dbmgr1.getCrassWord("lol")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
     
     print("TESTING getCrassWord WITH NO INPUT")
-    status = getCrassWord()
+    status = dbmgr1.getCrassWord()
     allCrassWords = {
         "fuck" : "fuck",
         "shit" : "shit"
@@ -363,17 +379,17 @@ def main():
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(allCrassWords))   
     
     print ("TESTING removeCrassWord")
-    status = removeCrassWord("fuck")
+    status = dbmgr1.removeCrassWord("fuck")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
-    status = removeCrassWord("lol")
+    status = dbmgr1.removeCrassWord("lol")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))   
     
     print ("TESTING getCrassWord after removeCrassWord")
-    status = getCrassWord("shit")
+    status = dbmgr1.getCrassWord("shit")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str("shit"))   
-    status = getCrassWord("lol")
+    status = dbmgr1.getCrassWord("lol")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
-    status = getCrassWord("fuck")
+    status = dbmgr1.getCrassWord("fuck")
     print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
 
 if __name__ == '__main__':
