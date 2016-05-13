@@ -9,7 +9,6 @@ classes:
 
 from dbmgr import Dbmgr
 import getpass
-import time
 import dbutils
 
 '''
@@ -36,7 +35,15 @@ class DbClient():
 	def __init__(self, dbmgr):
 		self.dbmgr = dbmgr
 		myname = getpass.getuser()
-		self.registerOffender(myname)
+		print ("Welcome to Crass! You're such an asshole."
+			   " Registering you as an offender ...")
+		print
+		status = self.registerOffender(myname)
+		if (status == False):
+			print ("Oh wait, it looks like you're fucking in here"
+				" already. Bullshit. Well, good for you, asshole.")
+		else:
+			print ("Done! Do you feel good about yourself?")
 
 	'''
     function: registerOffender()
@@ -49,12 +56,11 @@ class DbClient():
         name : A string name of the offender to be Registers
 
     outputs:
-    	None
+    	status : True if addition worked, False if name already
+    	registered, and "ERROR" in case of connection/authentication
+    	issue
     '''
 	def registerOffender(self, name):
-		print ("Welcome to Crass! You're such an asshole."
-			   " Registering you as an offender ...")
-		print()
 		newOffender = {
 			"name" : name,
 			"attr" : {
@@ -64,14 +70,8 @@ class DbClient():
 		        'confidence' : 5 
 			}
 		}
-		status = self.dbmgr.addOffender(newOffender)
-		time.sleep(3)
-		if (status == False):
-			print ("Oh wait, it looks like you're fucking in here"
-				" already. Bullshit. Well, good for you, asshole.")
-		else:
-			print ("Done! Do you feel good about yourself?")
-
+		return self.dbmgr.addOffender(newOffender)
+		
 	'''
     function: changeOffender()
 
@@ -88,39 +88,91 @@ class DbClient():
         			'confidence' : int 
         		}
     outputs:
-    	None
+    	status : True if change worked, False if not in database or
+    	if it is yourself, and "ERROR" in case of connection/authentication
+    	issue
     '''
-	def changeOffender(self, name):
+	def changeOffender(self, name, attr):
 		#check to make sure that that the offender you're
 		#changing is not you
 		if (name == getpass.getuser()):
-			print ("You're trying to change information about yourself!?"
-					" WTF?! You can't do that.")
+			#print ("You're trying to change information about yourself!?"
+			#		" WTF?! You can't do that.")
+			return False
 		else:
-			print ("")
+			return self.dbmgr.updateOffender(name, attr)
 
-	def unregisterOffender(self):
-		#Say something like "you're in this for life"
-		pass
+	'''
+    function: unregisterOffender()
 
+    description:
+        -A bit of an easter egg of crass. This function will
+        only unregister a crass offender if it is called with
+        a key-word argument fuckyou=<nametounregister>
+
+    inputs: 
+        None (or fuckyou=<name>)
+
+    outputs:
+    	status : True if successful, False if not in database or
+    	fuckyou key-word not provided, "ERROR" IF connection/authentication
+    	issue
+    '''
+	def unregisterOffender(self, **kwargs):
+		if kwargs.has_key("fuckyou"):
+			return self.dbmgr.removeOffender(kwargs["fuckyou"])
+		else:
+			#print ("No can do. Offenders are registered for life.")
+			return False
+			
+	'''
+    function: findFellowOffenders()
+
+    description:
+        -Gets a list of fellow offender names to interact with
+
+    inputs: 
+        None
+
+    outputs:
+    	names of offenders as a list, or None if you're alone on
+    	Crass
+    '''
 	def findFellowOffenders(self):
 		offenders = self.dbmgr.getOffender()
-		if (offenders != None):
-			print ("Your 'honorary' fellow offenders are : ")
+		if (len(offenders.keys()) > 1):
+			#print ("Your 'honorary' fellow offenders are : ")
+			return offenders.keys()
 		else:
-			print ("Looks like you're the only bitch on crass right now.")
-		return offenders 
+			#print ("Looks like you're the only bitch on Crass right now.")
+			return None
 
+	'''
+    function: learnVocabulary()
+
+    description:
+        -Gets a list of currently key-worded crass words
+
+    inputs: 
+        None
+
+    outputs:
+    	list of words on Crass, or None if no words currently key-worded
+    '''
 	def learnVocabulary(self):
-		#call getCrassWord()
-		pass
-
+		return self.dbmgr.getCrassWord().keys()
+		
 #Tester client
 def main():
 	dbmgr = Dbmgr()
 	dbclient = DbClient(dbmgr)
-	time.sleep(3)
-	print(dbclient.findFellowOffenders()) 
+	print (dbclient.findFellowOffenders()) 
+	print
+	print (dbclient.learnVocabulary())
+	print
+	print (dbclient.unregisterOffender())
+	print
+	print (dbclient.unregisterOffender(fuckyou="ilya"))
 	#valid = False	
 	#while(valid != True):
 	#	welcome = input()
