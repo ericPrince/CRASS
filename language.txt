@@ -24,12 +24,13 @@ task : named_task
 
 named_task : offender unnamed_task
 
+offender : WORD
+
 unnamed_task : DO operation TO args qualifier
 
 operation : function
 
-args : args
-     | arg optcomma
+args : args optcomma arg
 
 arg : expression
 
@@ -38,14 +39,11 @@ optcomma : COMMA
 
 empty : 
 
-qualifier : crass_phrase
+qualifier : phrase
 
-crass_phrase : crass_word phrase
-             | phrase crass_word
-
-phrase : crass_phrase
-       | WORD phrase
+phrase : WORD phrase
        | phrase WORD
+       | WORD
 
 expression : function
            | constant
@@ -68,7 +66,7 @@ number : INT
        | negative_number
 
 negative_number : MINUS INT
-                | MINUS_FLOAT
+                | MINUS FLOAT
 
 # add parenthesis to math
 math : add
@@ -89,5 +87,5 @@ divide : number DIVIDE number
 
 assignment : lval DICK rval
 
-lval : word (add things like "pkg.var" or "dict['entry']")
+lval : WORD (add things like "pkg.var" or "dict['entry']")
 rval : expression
