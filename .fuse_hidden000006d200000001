@@ -191,8 +191,6 @@ start = 'statements'
 def p_statements(p):
     '''statements : statements statement 
                   | statement'''
-    print('stmts')
-    print(p)
 
 #def p_statement(p):
 #    '''statement : task
@@ -206,9 +204,7 @@ def p_statements(p):
 #                 | COMMENT'''
 
 def p_statement(p):
-    '''statement : assign'''
-    print('stmt')
-    print(p)
+    '''statement : COMMENT'''
 
 def p_func_def(p):
     '''func_def : FUCK ID LPAREN optargs RPAREN DO statements OFFEND'''
@@ -304,8 +300,6 @@ def p_expression(p):
                   | constant
                   | math
                   | ID'''
-    print('expr')
-    print(p)
 
 def p_function(p):
     '''function : ID LPAREN optargs RPAREN'''
@@ -370,8 +364,7 @@ def p_error(p):
         pass
         #print("Syntax error at EOF")
 
-#parser = yacc.yacc(start=start)
-parser = yacc.yacc()
+parser = yacc.yacc(start=start)
 
 #------------------------------------------------
 # RUN
