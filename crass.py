@@ -359,3 +359,13 @@ parser = yacc.yacc(start=start)
 # RUN
 #------------------------------------------------
 
+while True:
+    try:
+        s = raw_input('CRASS 8===>- ')
+    except EOFError:
+        break
+
+    r = parser.parse(s, lexer=lever)
+
+    if r is not None:
+        print(r)
