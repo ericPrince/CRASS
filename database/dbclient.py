@@ -96,8 +96,8 @@ class DbClient():
 		#check to make sure that that the offender you're
 		#changing is not you
 		if (name == getpass.getuser()):
-			#print ("You're trying to change information about yourself!?"
-			#		" WTF?! You can't do that.")
+			print ("You're trying to change information about yourself!?"
+					" WTF?! You can't do that.")
 			return False
 		else:
 			return self.dbmgr.updateOffender(name, attr)
@@ -122,7 +122,7 @@ class DbClient():
 		if kwargs.has_key("fuckyou"):
 			return self.dbmgr.removeOffender(kwargs["fuckyou"])
 		else:
-			#print ("No can do. Offenders are registered for life.")
+			print ("No can do. Offenders are registered for life.")
 			return False
 			
 	'''
@@ -141,10 +141,10 @@ class DbClient():
 	def findFellowOffenders(self):
 		offenders = self.dbmgr.getOffender()
 		if (len(offenders.keys()) > 1):
-			#print ("Your 'honorary' fellow offenders are : ")
+			print ("Your 'honorary' fellow offenders are : ")
 			return offenders.keys()
 		else:
-			#print ("Looks like you're the only bitch on Crass right now.")
+			print ("Looks like you're the only bitch on Crass right now.")
 			return None
 
 	'''
@@ -172,7 +172,17 @@ def main():
 	print
 	print (dbclient.unregisterOffender())
 	print
-	print (dbclient.unregisterOffender(fuckyou="ilya"))
+	print (dbclient.unregisterOffender(fuckyou="Hannah"))
+	print 
+	change = {
+    			'speed' : 1,
+    			'accuracy' : 1,
+    			'readability' : 1,
+    			'confidence' : 1 
+       	} 
+	print (dbclient.changeOffender("ilya", change))
+	print
+	print (dbclient.changeOffender("Danny", change))
 	#valid = False	
 	#while(valid != True):
 	#	welcome = input()
