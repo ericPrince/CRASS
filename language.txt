@@ -1,0 +1,93 @@
+CRASS language definition template
+
+note ALL_CAPS means its a token
+
+start state should maybe be "statements"
+------------------------------
+
+statements : statements
+           | statement
+
+statement : func_def
+          | task
+          | operation ??
+          | beget (or should this be an expression?)
+          | other (tell to shut up...etc)
+          | assignment (or expr??)
+
+=============================
+Ilya do oper to a,b you idiot
+=============================
+
+task : named_task
+     | unnamed_task
+
+named_task : offender unnamed_task
+
+unnamed_task : DO operation TO args qualifier
+
+operation : function
+
+args : args
+     | arg optcomma
+
+arg : expression
+
+optcomma : COMMA
+         | empty
+
+empty : 
+
+qualifier : crass_phrase
+
+crass_phrase : crass_word phrase
+             | phrase crass_word
+
+phrase : crass_phrase
+       | WORD phrase
+       | phrase WORD
+
+expression : function
+           | constant
+           | math
+
+function : WORD LPAREN optargs RPAREN
+
+optargs : args
+        | empty
+
+# add list and maybe dict to constants
+constant : number
+         | string
+
+string : QUOTE TEXT QUOTE
+       | APOS TEXT APOS
+
+number : INT
+       | FLOAT
+       | negative_number
+
+negative_number : MINUS INT
+                | MINUS_FLOAT
+
+# add parenthesis to math
+math : add
+     | subtract
+     | multiply
+     | divide
+
+add : number PLUS number
+
+subtract : number MINUS number
+
+multiply : number MULTIPLY number
+
+divide : number DIVIDE number
+
+
+--------------------
+
+assignment : lval DICK rval
+
+lval : word (add things like "pkg.var" or "dict['entry']")
+rval : expression
