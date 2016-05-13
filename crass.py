@@ -13,11 +13,12 @@ if sys.version_info[0] >= 3:
 # LEX
 #------------------------------------------------
 
-tokens = ('DICK', 'INT', 'FLOAT', 'WORD')
+#tokens = ('DICK', 'INT', 'FLOAT', 'WORD')
 
 tokens = [
     # CRASS-specific
-    'DICK',
+    'DICK', 'TO', 'DO', 'POUND', 'FUCK', 'SMY','WHILE_NO','OFFEND','BEGET','FROM','SURE','NAH',
+    'FOR','AS', 'GIVEN', 'COMMENT',
 
     # Literals (identifier, integer constant, float constant, string constant, char const)
     'ID', 'TYPEID', 'INT', 'FLOAT', 'STRINGA', 'STRINGB',
@@ -38,8 +39,8 @@ tokens = [
     # Structure dereference (->)
     #'ARROW',
 
-    # Ternary operator (?)
-    #'TERNARY',
+    #Ternary operator (?)
+    'QUEST',
     
     # Delimeters ( ) [ ] { } , . ; :
     'LPAREN', 'RPAREN',
@@ -97,7 +98,7 @@ t_DECREMENT        = r'--'
 #t_ARROW            = r'->'
 
 # ?
-#t_TERNARY          = r'\?'
+t_QUEST          = r'\?'
 
 # Delimeters
 t_LPAREN           = r'\('
@@ -113,6 +114,9 @@ t_COLON            = r':'
 
 #t_ELLIPSIS         = r'\.\.\.'
 
+
+# We designed these...
+
 # Identifiers
 t_ID = r'[A-Za-z_][A-Za-z0-9_]*'
 
@@ -127,6 +131,23 @@ t_STRINGA = r'\"([^\\\n]|(\\.))*?\"'
 t_STRINGB = r'\'([^\\\n]|(\\.))*?\''
 
 t_DICK = r'8=+(>|\))-*'
+
+t_TO = r'to|with|on'
+t_DO = r'do'
+t_POUND = r'\#'
+
+
+t_FUCK = r'fuck'
+t_OFFEND = r'offend'
+t_FOR = r'for'
+t_GIVEN = r'given'
+t_WHILE_NO = r'while no'
+t_SURE = r'sure'
+t_NAH = r'nah'
+t_BEGET = r'beget'
+t_FROM = r'from'
+t_AS = r'as'
+t_SMY = r'show me your'
 
 #t_WORD = r'[a-zA-z_][a-zA-Z0-9_]*'
 
@@ -144,10 +165,13 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count('\n')
 
+def t_comment(t):
+	r'\#(.)*?\n'
+	t.lexer.lineno += 1
+
 def t_error(t):
     print('error: bad token %s' % t)
     t.lexer.skip(1)
-
 
 lever = lev.lev()
 
@@ -155,13 +179,16 @@ lever = lev.lev()
 # PARSER
 #------------------------------------------------
 
-precedence = ()
+precedence = (
+	('left','PLUS','MINUS','DIVIDE','TIMES'),
+	('right','UMINUS'),
+)
 
 start = 'statements'
 
 def p_statements(p):
-    '''statements : statements 
-                  | statements'''
+    '''statements : statements statement 
+                  | statement'''
 
 def p_statement(p):
     '''statement : task
@@ -172,8 +199,57 @@ def p_statement(p):
                  | beget
                  | print
                  | func_def
-                 | comment
+                 | COMMENT
                  | expression'''
+
+def p_func_def(p):
+	'''func_def : FUCK ID LPAREN optargs RPAREN DO statements OFFEND'''
+
+def p_for(p):
+	'''for : basic_for
+		   | iter_for'''
+
+def p_basic_for(p):
+	'''basic_for : FOR expression itervar GIVEN DO statements OFFEND'''
+
+def p_iter_for(p):
+	'''iter_for : FOR expression itervar DO statements OFFEND'''
+
+def p_itervar(p):
+	'''itervar : ID'''
+def p_while(p):
+	'''while : WHILE_NO itervar GIVEN DO statements OFFEND'''
+
+def p_surenah(p):
+	'''surenah : sure OFFEND
+			   | sure nah'''
+
+def p_sure(p):
+	'''sure : expression QUEST SURE DO statements'''
+
+def p_nah(p):
+	'''nah : NAH DO statements OFFEND'''
+
+def p_beget(p):
+	'''beget : optfrom basic_beget optas'''
+
+def p_basic_beget(p):
+	'''basic_beget : BEGET ID'''
+
+def p_optfrom(p):
+	'''optfrom : FROM ID
+			   | empty'''
+
+def p_optas(p):
+	'''optas : AS ID
+		     | empty'''
+
+def p_print(p):
+	'''print : optoffender SMY expression'''
+
+def p_optoffender(p):
+	'''optoffender : offender
+	               | empty'''
 
 def p_task(p):
     '''task : named_task
@@ -186,7 +262,7 @@ def p_offender(p):
     '''offender : ID'''
 
 def p_unnamed_task(p):
-    '''unnamed_task : 'do' operation to args qualifier'''
+    '''unnamed_task : DO operation TO args qualifier'''	
 
 def p_operation(p):
     '''operation : func_name'''
@@ -208,9 +284,11 @@ def p_qualifier(p):
     '''qualifier : phrase'''
 
 def p_phrase(p):
-    '''phrase : word phrase
-              | phrase word
-              | word'''
+    '''phrase : word optphrase'''
+
+def p_optphrase(p):
+	'''optphrase : phrase
+				 | empty'''
 
 def p_expression(p):
     '''expression : function
@@ -238,8 +316,8 @@ def p_number(p):
               | negative_number'''
 
 def p_negative_number(p):
-    '''negative_number : MINUS INT
-                       | MINUS FLOAT'''
+    '''negative_number : MINUS INT %prec UMINUS
+                       | MINUS FLOAT %prec UMINUS'''
 
 def p_math(p):
     '''math : add
@@ -254,7 +332,7 @@ def p_sub(p):
     '''sub : number MINUS number'''
 
 def p_mul(p):
-    '''mul : number MULTIPLY number'''
+    '''mul : number TIMES number'''
 
 def p_div(p):
     '''div : number DIVIDE number'''
@@ -268,6 +346,12 @@ def p_lval(p):
 def p_rval(p):
     '''rval : expression'''
 
+def p_error(p):
+    if p:
+        print("Syntax error at line %d: '%s'" % (p.lineno, p.value))
+    else:
+        pass
+        #print("Syntax error at EOF")
 
 parser = yacc.yacc(start=start)
 
