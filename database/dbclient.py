@@ -10,6 +10,7 @@ classes:
 from dbmgr import Dbmgr
 import getpass
 import time
+import dbutils
 
 '''
 class: DbClient
@@ -53,6 +54,7 @@ class DbClient():
 	def registerOffender(self, name):
 		print ("Welcome to Crass! You're such an asshole."
 			   " Registering you as an offender ...")
+		print()
 		newOffender = {
 			"name" : name,
 			"attr" : {
@@ -70,17 +72,57 @@ class DbClient():
 		else:
 			print ("Done! Do you feel good about yourself?")
 
-	def changeOffender(self):
-		pass
+	'''
+    function: changeOffender()
+
+    description:
+        -Changes another offender's attributes
+
+    inputs: 
+        name : A string name of the offender to be changed
+        attr : a dictionary of the form 
+        		{
+        			'speed' : int,
+        			'accuracy' : int,
+        			'readability' : int,
+        			'confidence' : int 
+        		}
+    outputs:
+    	None
+    '''
+	def changeOffender(self, name):
+		#check to make sure that that the offender you're
+		#changing is not you
+		if (name == getpass.getuser()):
+			print ("You're trying to change information about yourself!?"
+					" WTF?! You can't do that.")
+		else:
+			print ("")
 
 	def unregisterOffender(self):
+		#Say something like "you're in this for life"
+		pass
+
+	def findFellowOffenders(self):
+		offenders = self.dbmgr.getOffender()
+		if (offenders != None):
+			print ("Your 'honorary' fellow offenders are : ")
+		else:
+			print ("Looks like you're the only bitch on crass right now.")
+		return offenders 
+
+	def learnVocabulary(self):
+		#call getCrassWord()
 		pass
 
 #Tester client
 def main():
 	dbmgr = Dbmgr()
 	dbclient = DbClient(dbmgr)
-	#while(True):
+	time.sleep(3)
+	print(dbclient.findFellowOffenders()) 
+	#valid = False	
+	#while(valid != True):
 	#	welcome = input()
 
 if __name__ == '__main__':
