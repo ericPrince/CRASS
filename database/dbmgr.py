@@ -72,7 +72,7 @@ outputs:
 '''
 def getOffender(name=None):
     try:
-        return fdb.get('/students/', name)
+        return fdb.get('/offenders/', name)
     except HTTPError:
         return "ERROR"
 
@@ -125,7 +125,7 @@ def removeOffender(name):
     isPresent = getOffender(name)
     if (isPresent != None):
         try:
-            fdb.delete('/offenders/' + name)
+            fdb.delete('/offenders/', name)
             return True
         except HTTPError:
             return "ERROR"
@@ -174,8 +174,8 @@ inputs:
         returns all crasswords)
 
 outputs:
-     If found, returns dictionary representing an offender
-     (or dictionary of dictionaries of many offenders by name
+     If found, returns the crassword
+     (or dictionary of many crasswords by name
         if name was None, None if not found, and "ERROR" if 
             connection/authentication issue)
 '''
@@ -186,7 +186,7 @@ def getCrassWord(word=None):
         return "ERROR"
 
 '''
-function: removeOffender()
+function: removeCrassWord()
 
 description:
     -Removes a crassword from the database by name
@@ -204,7 +204,7 @@ def removeCrassWord(word):
     isPresent = getCrassWord(word)
     if (isPresent != None):
         try:
-            fdb.delete('/crasswords/' + word)
+            fdb.delete('/crasswords/', word)
             return True
         except HTTPError:
             return "ERROR"
@@ -215,79 +215,166 @@ def removeCrassWord(word):
     
 #Tester client
 def main():
-    '''UNPROTECTED FIREBASE FOR RANDOM TESTING
-    FIREBASE_URL = "https://fbtest123.firebaseio.com/"
-    fdb = firebase.FirebaseApplication(FIREBASE_URL, authentication=None)
-    '''
-    ilya = dict()
-    ilya['netid'] = "ilyak"
-    ilya['freelist'] = ['2016-01-17T13:30:00', '2016-01-25T134:00:00']
-    andrea = dict()
-    andrea['netid'] = "amalleo"
-    andrea['freelist'] = ['2016-01-17T13:30:00', '2016-01-25T134:00:00']
-    nick = dict()
-    nick['netid'] = "nmaselli"
-    nick['freelist'] = ['2016-01-17T13:30:00', '2016-01-25T134:00:00']
-    cos333 = dict()
-    cos333['name'] = "COS 333"
-    cos333['students'] = ["ilyak", "amalleo", "nmaselli"]
-    cos333['duedates'] = ['2016-01-26', '2016-02-04' ]
-    mae426 = dict()
-    mae426['name'] = "MAE 426"
-    mae426['students'] = ["ilyak", "nmaselli"]
-    mae426['duedates'] = ['2016-01-27', '2016-02-05']
+    ilya = {
+        'name' : 'ilya',
+        'attr' : {
+            'speed' : 3,
+            'accuracy' : 3,
+            'readability' : 7,
+            'confidence' : 7        
+        }
+    }
+    danny = {
+        'name' : 'danny',
+        'attr' : {
+            'speed' : 5,
+            'accuracy' : 5,
+            'readability' : 5,
+            'confidence' : 5        
+        }
+    }
+    hannah = {
+        'name' : 'hannah',
+        'attr' : {
+            'speed' : 7,
+            'accuracy' : 7,
+            'readability' : 3,
+            'confidence' : 3        
+        }
+    }
+    
+    print ("TESTING addOffender")
+    status = addOffender(ilya)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))
+    status = addOffender(danny)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))
+    status = addOffender(hannah)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))
+    status = addOffender(ilya)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))
+    status = addOffender(danny)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))
+    status = addOffender(hannah)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))
+    
+    print ("TESTING getOffender")
+    status = getOffender("ilya")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(ilya))   
+    status = getOffender("danny")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(danny))   
+    status = getOffender("hannah")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(hannah))   
+    status = getOffender("eric")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
+    status = getOffender("shirley")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
+    
+    print ("TESTING getOffender WITH NO INPUT")
+    status = getOffender()
+    allOffenders = {
+        "ilya" : ilya,
+        "danny" : danny,
+        "hannah" : hannah
+    }
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(allOffenders))   
 
-    print ("TESTING addStudent")
-    status = addStudent(ilya)
-    print (status)
-    status = addStudent(andrea)
-    print (status)
-    status = addStudent(nick)
-    print (status)
-    status = addStudent(ilya)
-    print (status)
-    status = addStudent(andrea)
-    print (status)
-    status = addStudent(nick)
-    print (status)
+    print ("TESTING updateOffender")
+    updateIlya = {
+        'speed' : 1,
+        'accuracy' : 1,
+        'readability' : 1,
+        'confidence' : 1   
+    }
+    status = updateOffender("ilya", updateIlya)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
+    updateDanny = {
+        'speed' : 1,
+        'accuracy' : 1,
+        'readability' : 1,
+        'confidence' : 1   
+    }
+    status = updateOffender("danny", updateDanny)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
+    updateHannah = {
+        'speed' : 2,
+        'accuracy' : 2,
+        'readability' : 2,
+        'confidence' : 2 
+    }
+    status = updateOffender("hannah", updateHannah)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
+    updateEric = {
+        'speed' : 2,
+        'accuracy' : 2,
+        'readability' : 2,
+        'confidence' : 2   
+    }
+    status = updateOffender("eric", updateEric)
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))   
+    
+    print ("TESTING getOffender after updateOffender")
+    status = getOffender("ilya")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(updateIlya))   
+    status = getOffender("danny")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(updateDanny))   
+    status = getOffender("hannah")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(updateHannah))   
+    status = getOffender("eric")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
+    
+    print ("TESTING removeOffender")
+    status = removeOffender("ilya")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
+    status = removeOffender("danny")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
+    status = removeOffender("eric")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))   
+    
+    print ("TESTING getOffender after removeOffender")
+    status = getOffender("ilya")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
+    status = getOffender("danny")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
+    status = getOffender("hannah")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(updateHannah))   
+    status = getOffender("eric")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
+    
+    print ("TESTING addCrassWord")
+    status = addCrassWord("fuck")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
+    status = addCrassWord("fuck")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))   
+    status = addCrassWord("shit")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
+    
+    print ("TESTING getCrassWord")
+    status = getCrassWord("shit")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str("shit"))   
+    status = getCrassWord("lol")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
+    
+    print("TESTING getCrassWord WITH NO INPUT")
+    status = getCrassWord()
+    allCrassWords = {
+        "fuck" : "fuck",
+        "shit" : "shit"
+    }
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(allCrassWords))   
+    
+    print ("TESTING removeCrassWord")
+    status = removeCrassWord("fuck")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(True))   
+    status = removeCrassWord("lol")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(False))   
+    
+    print ("TESTING getCrassWord after removeCrassWord")
+    status = getCrassWord("shit")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str("shit"))   
+    status = getCrassWord("lol")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
+    status = getCrassWord("fuck")
+    print ("REAL : " + str(status) + "   |   CORRECT : " + str(None))   
 
-    print ("TESTING getStudent")
-    status = getStudent("ilyak")
-    print (status)
-    status = getStudent("amalleo")
-    print (status)
-    status = getStudent("nmaselli")
-    print (status)
-
-    print ("TESTING addCourse")
-    status = addCourse(cos333)
-    print (status)
-    status = addCourse(mae426)
-    print (status)
-    status = addCourse(cos333)
-    print (status)
-    status = addCourse(mae426)
-    print (status)
-
-    print ("TESTING getCourse")
-    status = getCourse("COS 333")
-    print (status)
-    status = getCourse("MAE 426")
-    print (status)
-
-    print ("TESTING addTimesToStudent")
-    ilya_updates = {"freelist" : ['2016-01-25T134:00:00', '2016-01-25T134:00:00']}
-    status = addTimesToStudent("ilyak", ilya_updates)
-    print (status)
-    andrea_updates = {"freelist" : ['2016-01-25T134:00:00', '2016-01-25T134:00:00']}
-    status = addTimesToStudent("amalleo", andrea_updates)
-    print (status)
-    status = addTimesToStudent("asdf", andrea_updates)
-    print (status)
-
-    print ("TESTING updateCourse")
-    cos333_updates = {"students" : ['ilyak', 'amalleo', 'nmaselli']}
-    status = updateCourse("COS 333", cos333_updates)
-    print (status)
-    mae426_updates = {"duedates" : ['2016-01-25']}
-    status = updateCourse("MAE 426", mae426_updates)
+if __name__ == '__main__':
+    main()
