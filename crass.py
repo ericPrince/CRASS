@@ -132,10 +132,18 @@ t_STRINGB = r'\'([^\\\n]|(\\.))*?\''
 
 t_DICK = r'8=+(>|\))-*'
 
-t_TO = r'to|with|on'
-t_DO = r'do'
+#t_TO = r'(to)|(with)|(on)'
+
+def t_TO(t):
+    r'(to)|(with)|(on)'
+    print('t_TO')
+
+#t_DO = r'do'
 t_POUND = r'\#'
 
+def t_DO(t):
+    r'do'
+    print('t_DO')
 
 t_FUCK = r'fuck'
 t_OFFEND = r'offend'
@@ -205,7 +213,7 @@ def p_statements(p):
 #                 | COMMENT'''
 
 def p_statement(p):
-    '''statement : expression
+    '''statement : task
     			 | assign
     			 | beget'''
     print('stmt')
@@ -289,7 +297,7 @@ def p_offender(p):
     print('off')
 
 def p_unnamed_task(p):
-    '''unnamed_task : DO operation TO args''' 
+    '''unnamed_task : DO operation TO''' 
     #'''unnamed_task : DO operation TO args qualifier''' 
     print('unnamed_task')
 
@@ -372,19 +380,19 @@ def p_math(p):
     print('math')
 
 def p_add(p):
-    '''add : number PLUS number'''
+    '''add : expression PLUS expression'''
     print('add')
 
 def p_sub(p):
-    '''sub : number MINUS number'''
+    '''sub : expression MINUS expression'''
     print('sub')
 
 def p_mul(p):
-    '''mul : number TIMES number'''
+    '''mul : expression TIMES expression'''
     print('mul')
 
 def p_div(p):
-    '''div : number DIVIDE number'''
+    '''div : expression DIVIDE expression'''
     print('div')
 
 def p_assign(p):
@@ -402,6 +410,7 @@ def p_rval(p):
 def p_error(p):
     if p:
         print("Syntax error at line %d: '%s'" % (p.lineno, p.value))
+        print(p)
     else:
         pass
         #print("Syntax error at EOF")

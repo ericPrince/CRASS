@@ -2,6 +2,9 @@
 *parser.out
 *parsetab.py
 
+# sublime hidden fuse files
+*.fuse_hidden*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
