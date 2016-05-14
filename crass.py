@@ -192,7 +192,6 @@ def p_statements(p):
     '''statements : statements statement 
                   | statement'''
     print('stmts')
-    print(p)
 
 #def p_statement(p):
 #    '''statement : task
@@ -206,98 +205,127 @@ def p_statements(p):
 #                 | COMMENT'''
 
 def p_statement(p):
-    '''statement : assign'''
+    '''statement : expression
+    			 | assign
+    			 | beget'''
     print('stmt')
-    print(p)
 
 def p_func_def(p):
     '''func_def : FUCK ID LPAREN optargs RPAREN DO statements OFFEND'''
+    print('func def')
 
 def p_for(p):
     '''for : basic_for
            | iter_for'''
+    print('for')
 
 def p_basic_for(p):
     '''basic_for : FOR expression itervar GIVEN DO statements OFFEND'''
+    print('basic_for')
 
 def p_iter_for(p):
     '''iter_for : FOR expression itervar DO statements OFFEND'''
+    print('iter_for')
 
 def p_itervar(p):
     '''itervar : ID'''
+    print('itervar')
+
 def p_while(p):
     '''while : WHILE_NO itervar GIVEN DO statements OFFEND'''
+    print('while')
 
 def p_surenah(p):
     '''surenah : sure OFFEND
                | sure nah'''
+    print('surenah')
 
 def p_sure(p):
     '''sure : expression QUEST SURE DO statements'''
+    print('sure')
 
 def p_nah(p):
     '''nah : NAH DO statements OFFEND'''
+    print('nah')
 
 def p_beget(p):
     '''beget : optfrom basic_beget optas'''
+    print('beget')
 
 def p_basic_beget(p):
     '''basic_beget : BEGET ID'''
+    print('basic beget')
 
 def p_optfrom(p):
     '''optfrom : FROM ID
                | empty'''
+    print('optfrom')
 
 def p_optas(p):
     '''optas : AS ID
              | empty'''
+    print('optas')
 
 def p_print(p):
     '''print : optoffender SMY expression'''
+    print('print')
 
 def p_optoffender(p):
     '''optoffender : offender
                    | empty'''
+    print('optoff')
 
 def p_task(p):
     '''task : named_task
             | unnamed_task'''
+    print('task')
 
 def p_named_task(p):
     '''named_task : offender unnamed_task'''
+    print('named_task')
 
 def p_offender(p):
     '''offender : ID'''
+    print('off')
 
 def p_unnamed_task(p):
     '''unnamed_task : DO operation TO args''' 
     #'''unnamed_task : DO operation TO args qualifier''' 
+    print('unnamed_task')
 
 def p_operation(p):
     '''operation : func_name'''
+    print('op')
 
 def p_func_name(p):
     '''func_name : word'''
+    print('func name')
 
 def p_word(p):
     '''word : ID'''
+    print('word')
 
 def p_args(p):
     '''args : arg
             | arg COMMA args'''
+    print('args')
 
 def p_arg(p):
     '''arg : expression'''
+    print('arg')
 
 def p_qualifier(p):
     '''qualifier : phrase'''
+    print('qual')
 
 def p_phrase(p):
     '''phrase : word optphrase'''
+    print('phrase')
 
 def p_optphrase(p):
     '''optphrase : phrase
                  | empty'''
+    print('optphrase')
 
 def p_expression(p):
     '''expression : function
@@ -305,63 +333,71 @@ def p_expression(p):
                   | math
                   | ID'''
     print('expr')
-    print(p)
 
 def p_function(p):
     '''function : ID LPAREN optargs RPAREN'''
+    print('func')
 
 def p_optargs(p):
     '''optargs : args
                | empty'''
+    print('optargs')
 
 def p_empty(p):
     '''empty : '''
+    print('empty')
 
 def p_constant(p):
     '''constant : number
                 | STRINGA
                 | STRINGB'''
+    print('const')
 
 def p_number(p):
     '''number : INT
               | FLOAT
               | negative_number'''
+    print('num')
 
 def p_negative_number(p):
     '''negative_number : MINUS INT %prec UMINUS
                        | MINUS FLOAT %prec UMINUS'''
+    print('neg')
 
 def p_math(p):
     '''math : add
             | sub
             | mul
             | div'''
+    print('math')
 
 def p_add(p):
     '''add : number PLUS number'''
+    print('add')
 
 def p_sub(p):
     '''sub : number MINUS number'''
+    print('sub')
 
 def p_mul(p):
     '''mul : number TIMES number'''
+    print('mul')
 
 def p_div(p):
     '''div : number DIVIDE number'''
+    print('div')
 
 def p_assign(p):
     '''assign : lval DICK rval'''
-    print(p[0])
-    print(p[1])
-    print(p[2])
-    print(p[3])
     print('assign!!')
 
 def p_lval(p):
     '''lval : ID'''
+    print('lval')
 
 def p_rval(p):
     '''rval : expression'''
+    print('rval')
 
 def p_error(p):
     if p:
