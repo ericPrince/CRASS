@@ -10,6 +10,12 @@ if sys.version_info[0] >= 3:
     raw_input = input
 
 #--------------------------------------
+# PROGRAM
+#--------------------------------------
+
+# TODO: add variable namespace, loop nesting...
+
+#--------------------------------------
 # TOKENS
 #--------------------------------------
 
@@ -21,21 +27,19 @@ tokens = (
     'INT', 'FLOAT', 'STRINGA', 'STRINGB',
 
     # keywords
-    'DO', 'TO',
+    'DO', 'TO', 'FUCK', 'END', 
 
     # assignment
     'DICK',
 
     # symbols
-    'COMMA', 'LPAREN', 'RPAREN',
+    'COMMA', 'LPAREN', 'RPAREN', 'LBRACKET',
+    'RBRACKET', 'LBRACE', 'RBRACE', 'COLON', 
 
     # operators
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE',
 
 )
-
-# build this automatically
-t_ID = r'(?!do|to)[A-Za-z_][A-Za-z0-9_]*'
 
 #--------------------------------------
 
@@ -56,10 +60,22 @@ t_STRINGB = r'\'([^\\\n]|(\\.))*?\''
 
 #--------------------------------------
 
-# keywords
+# keywords and ID
 
 t_DO = r'do'
 t_TO = r'to'
+t_FUCK = r'fuck'
+t_END = r'end'
+
+keywords = (t_DO, t_TO, t_FUCK, t_END)
+
+# build this automatically
+t_ID = r'(?!'                    \
+     + r'|'.join(keywords)       \
+     + r')'                      \
+     + r'[A-Za-z_][A-Za-z0-9_]*'
+
+#t_ID = r'(?!do|to|fuck|end)[A-Za-z_][A-Za-z0-9_]*'
 
 #--------------------------------------
 
@@ -71,9 +87,14 @@ t_DICK = r'8=+(>|\))-*'
 
 # symbols
 
-t_COMMA = r','
-t_LPAREN = r'\('
-t_RPAREN = r'\)'
+t_COMMA            = r','
+t_LPAREN           = r'\('
+t_RPAREN           = r'\)'
+t_LBRACKET         = r'\['
+t_RBRACKET         = r'\]'
+t_LBRACE           = r'\{'
+t_RBRACE           = r'\}'
+t_COLON            = r':'
 
 #--------------------------------------
 
@@ -126,7 +147,8 @@ def p_statements(p):
 
 def p_statement(p):
     '''statement : task
-                 | assign'''
+                 | assign
+                 | func_def'''
 
 #--------------------------------------
 
@@ -213,13 +235,62 @@ def p_rval(p):
 
 #--------------------------------------
 
+# function definition
+
+def p_func_def(p):
+    '''func_def : FUCK ID LPAREN optargs RPAREN statements end'''
+
+def p_end(p):
+    '''end : END'''
+
+#--------------------------------------
+
 # constants
 
 def p_constant(p):
     '''constant : INT
                 | FLOAT
-                | STRINGA
-                | STRINGB'''
+                | string
+                | list
+                | tuple
+                | dict'''
+
+def p_string(p):
+    '''string : STRINGA
+              | STRINGB'''
+
+#--------------------------------------
+
+# constants - list
+
+def p_list(p):
+    '''list : LBRACKET optargs RBRACKET'''
+
+#--------------------------------------
+
+# constants - tuple
+
+def p_tuple(p):
+    '''tuple : LPAREN tuple_args RPAREN'''
+
+def p_tuple_args(p):
+    '''tuple_args : arg COMMA optargs
+                  | empty'''
+
+#--------------------------------------
+
+# constants - dict
+
+def p_dict(p):
+    '''dict : LBRACE dict_args RBRACE'''
+
+def p_dict_args(p):
+    '''dict_args : dict_arg
+                 | dict_arg COMMA
+                 | dict_arg COMMA dict_args'''
+
+def p_dict_arg(p):
+    '''dict_arg : expr COLON expr'''
 
 #--------------------------------------
 
