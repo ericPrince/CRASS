@@ -27,7 +27,8 @@ tokens = (
     'INT', 'FLOAT', 'STRINGA', 'STRINGB',
 
     # keywords
-    'DO', 'TO', 'FUCK', 'END', 
+    'DO', 'TO', 'FUCK', 'END', 'WHILE',
+    'NO', 'GIVEN', 'FOR', 'SURE', 'NAH',
 
     # assignment
     'DICK',
@@ -35,6 +36,7 @@ tokens = (
     # symbols
     'COMMA', 'LPAREN', 'RPAREN', 'LBRACKET',
     'RBRACKET', 'LBRACE', 'RBRACE', 'COLON', 
+    'QUEST', 
 
     # operators
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE',
@@ -62,18 +64,31 @@ t_STRINGB = r'\'([^\\\n]|(\\.))*?\''
 
 # keywords and ID
 
-t_DO = r'do'
-t_TO = r'to'
-t_FUCK = r'fuck'
-t_END = r'end'
+t_DO      = r'do'
+t_TO      = r'to'
+t_FUCK    = r'fuck'
+t_END     = r'end'
+t_WHILE   = r'while'
+t_NO      = r'no'
+t_GIVEN   = r'given'
+t_FOR     = r'for'
+t_SURE    = r'sure'
+t_NAH     = r'nah'
 
-keywords = (t_DO, t_TO, t_FUCK, t_END)
+keywords = (t_DO, t_TO, t_FUCK, t_END,
+            t_WHILE, t_NO, t_GIVEN, t_FOR,
+            t_SURE, t_NAH,)
 
-# build this automatically
+# build this automatically bc duh
 t_ID = r'(?!'                    \
+     + r'('                      \
      + r'|'.join(keywords)       \
      + r')'                      \
+     + r'[^A-Za-z0-9_]'          \
+     + r')'                      \
      + r'[A-Za-z_][A-Za-z0-9_]*'
+
+print(t_ID)
 
 #t_ID = r'(?!do|to|fuck|end)[A-Za-z_][A-Za-z0-9_]*'
 
@@ -95,6 +110,7 @@ t_RBRACKET         = r'\]'
 t_LBRACE           = r'\{'
 t_RBRACE           = r'\}'
 t_COLON            = r':'
+t_QUEST            = r'\?'
 
 #--------------------------------------
 
@@ -148,7 +164,11 @@ def p_statements(p):
 def p_statement(p):
     '''statement : task
                  | assign
-                 | func_def'''
+                 | func_def
+                 | while
+                 | for_iter
+                 | for_items
+                 | sure_nah'''
 
 #--------------------------------------
 
@@ -245,6 +265,37 @@ def p_end(p):
 
 #--------------------------------------
 
+# while
+
+def p_while(p):
+    '''while : WHILE NO itervar GIVEN DO statements end'''
+
+def p_itervar(p):
+    '''itervar : ID'''
+
+#--------------------------------------
+
+# for
+
+def p_for_iter(p):
+    '''for_iter : FOR expr itervar GIVEN DO statements end'''
+
+def p_for_items(p):
+    '''for_items : FOR expr itervar DO statements end'''
+
+#--------------------------------------
+
+# surenah
+
+def p_sure_nah(p):
+    '''sure_nah : DO expr QUEST SURE DO statements nah
+                | DO expr QUEST SURE DO statements end'''
+
+def p_nah(p):
+    '''nah : NAH DO statements end'''
+
+#--------------------------------------
+
 # constants
 
 def p_constant(p):
@@ -282,7 +333,8 @@ def p_tuple_args(p):
 # constants - dict
 
 def p_dict(p):
-    '''dict : LBRACE dict_args RBRACE'''
+    '''dict : LBRACE dict_args RBRACE
+            | LBRACE RBRACE'''
 
 def p_dict_args(p):
     '''dict_args : dict_arg
