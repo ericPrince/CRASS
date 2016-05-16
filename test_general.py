@@ -15,7 +15,26 @@ if sys.version_info[0] >= 3:
 
 # TODO: add variable namespace, loop nesting...
 
+#--------------------------------------
+
+# Program variables
+
+dickdict = {'Ilya': "8>",'Danny':"8======>>-", 'Eric':"8==>--<==8", 'default':"CRASS"}
+
 variables = {}
+
+arglist = []
+
+offenders = ('Ilya','Danny','Eric', 'default',
+    )
+
+active_offender = ['default',]
+
+#--------------------------------------
+
+# Built-in functions
+
+variables["sum"] = lambda x: sum(x[0])
 
 #--------------------------------------
 # TOKENS
@@ -30,7 +49,8 @@ tokens = (
 
     # keywords
     'DO', 'TO', 'FUCK', 'END', 'WHILE',
-    'NO', 'GIVEN', 'FOR', 'SURE', 'NAH', 'SMY',
+    'NO', 'GIVEN', 'FOR', 'SURE', 'NAH', 
+    'SMY', 'HEY', 'SETAO',
 
     # assignment
     'DICK',
@@ -76,12 +96,14 @@ t_GIVEN   = r'given'
 t_FOR     = r'for'
 t_SURE    = r'sure'
 t_NAH     = r'nah'
+t_HEY     = r'hey'
 
-t_SMY	  = r'smy'
+t_SMY     = r'smy'
+t_SETAO   = r'setao'
 
 keywords = (t_DO, t_TO, t_FUCK, t_END,
             t_WHILE, t_NO, t_GIVEN, t_FOR,
-            t_SURE, t_NAH, t_SMY,)
+            t_SURE, t_NAH, t_SMY, t_HEY, t_SETAO,)
 
 # build this automatically bc duh
 t_ID = r'(?!'                    \
@@ -173,7 +195,8 @@ def p_statement(p):
                  | for_iter
                  | for_items
                  | sure_nah
-                 | print'''
+                 | print
+                 | setao'''
 
 #--------------------------------------
 
@@ -191,8 +214,8 @@ def p_expr_const(p):
     '''expr : constant'''
     p[0] = p[1]
 
-def p_expr_func_call(p):
-    '''expr : func_name LPAREN optargs RPAREN'''
+#def p_expr_func_call(p):
+#    '''expr : func_name LPAREN optargs RPAREN'''
 
 def p_expr_paren(p):
     '''expr : LPAREN expr RPAREN'''
@@ -230,14 +253,31 @@ def p_expr_negate(p):
 # task
 
 def p_task(p):
-    '''task : offender DO func_name TO args'''
-    print('task')
+    '''task : HEY offender DO func_name TO args'''
+    if p[2] == "you" and not active_offender:
+        print("OFFENDER ERROR")
+
+    if p[2] != "you":
+        active_offender.append(p[2])
+    else:
+        active_offender.append(active_offender[-1])
+
+    variables[p[4]](p[6])
+
+    del active_offender[-1]
 
 def p_offender(p):
     '''offender : ID'''
+    p[0] = p[1]
+
+def p_setao(p):
+    '''setao : SETAO offender'''
+    active_offender[-1] = p[2]
 
 def p_func_name(p):
     '''func_name : ID'''
+    p[0] = p[1]
+### check for function names not in vars
 
 #--------------------------------------
 
@@ -246,13 +286,20 @@ def p_func_name(p):
 def p_args(p):
     '''args : arg
             | arg COMMA args'''
+    #arglist.append(p[1])
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[1] + p[3]
 
 def p_arg(p):
     '''arg : expr'''
+    p[0] = [p[1],]
 
 def p_optargs(p):
     '''optargs : args
                | empty'''
+    p[0] = p[1]
 
 #--------------------------------------
 
@@ -281,6 +328,8 @@ def p_rval(p):
 def p_func_def(p):
     '''func_def : FUCK ID LPAREN optargs RPAREN statements end'''
 
+
+
 def p_end(p):
     '''end : END'''
 
@@ -289,8 +338,8 @@ def p_end(p):
 # print
 
 def p_print(p):
-	'''print : offender SMY expr'''
-	print(p[3])
+    '''print : offender SMY expr'''
+    print(p[3])
 
 #--------------------------------------
 
@@ -339,6 +388,7 @@ def p_constant(p):
 def p_string(p):
     '''string : STRINGA
               | STRINGB'''
+    p[0] = p[1][1:-1]
 
 #--------------------------------------
 
@@ -346,6 +396,7 @@ def p_string(p):
 
 def p_list(p):
     '''list : LBRACKET optargs RBRACKET'''
+    p[0] = p[2]
 
 #--------------------------------------
 
@@ -399,7 +450,10 @@ parser = yacc.yacc(start='statements')
 
 while True:
     try:
-        s = raw_input('input : ')
+        print(active_offender[-1])
+        print(dickdict[active_offender[-1]])
+        print("--")
+        s = raw_input(dickdict[active_offender[-1]] + " : ")
     except EOFError:
         break
 
