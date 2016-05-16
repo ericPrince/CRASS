@@ -15,6 +15,8 @@ if sys.version_info[0] >= 3:
 
 # TODO: add variable namespace, loop nesting...
 
+variables = {}
+
 #--------------------------------------
 # TOKENS
 #--------------------------------------
@@ -28,7 +30,7 @@ tokens = (
 
     # keywords
     'DO', 'TO', 'FUCK', 'END', 'WHILE',
-    'NO', 'GIVEN', 'FOR', 'SURE', 'NAH',
+    'NO', 'GIVEN', 'FOR', 'SURE', 'NAH', 'SMY',
 
     # assignment
     'DICK',
@@ -65,7 +67,7 @@ t_STRINGB = r'\'([^\\\n]|(\\.))*?\''
 # keywords and ID
 
 t_DO      = r'do'
-t_TO      = r'to'
+t_TO      = r'to|with|on'
 t_FUCK    = r'fuck'
 t_END     = r'end'
 t_WHILE   = r'while'
@@ -75,9 +77,11 @@ t_FOR     = r'for'
 t_SURE    = r'sure'
 t_NAH     = r'nah'
 
+t_SMY	  = r'smy'
+
 keywords = (t_DO, t_TO, t_FUCK, t_END,
             t_WHILE, t_NO, t_GIVEN, t_FOR,
-            t_SURE, t_NAH,)
+            t_SURE, t_NAH, t_SMY,)
 
 # build this automatically bc duh
 t_ID = r'(?!'                    \
@@ -168,7 +172,8 @@ def p_statement(p):
                  | while
                  | for_iter
                  | for_items
-                 | sure_nah'''
+                 | sure_nah
+                 | print'''
 
 #--------------------------------------
 
@@ -176,9 +181,15 @@ def p_statement(p):
 
 def p_expr_id(p):
     '''expr : ID'''
+    try:
+            p[0] = variables[p[1]]
+    except LookupError:
+            print("Undefined name '%s'" % p[1])
+            p[0] = None
 
 def p_expr_const(p):
     '''expr : constant'''
+    p[0] = p[1]
 
 def p_expr_func_call(p):
     '''expr : func_name LPAREN optargs RPAREN'''
@@ -192,15 +203,19 @@ def p_expr_paren(p):
 
 def p_expr_add(p):
     '''expr : expr PLUS expr'''
+    p[0] = p[1] + p[3]
 
 def p_expr_sub(p):
     '''expr : expr MINUS expr'''
+    p[0] = p[1] - p[3]
 
 def p_expr_mul(p):
     '''expr : expr TIMES expr'''
+    p[0] = p[1] * p[3]
 
 def p_expr_div(p):
     '''expr : expr DIVIDE expr'''
+    p[0] = p[1] / p[3]
 
 #--------------------------------------
 
@@ -208,6 +223,7 @@ def p_expr_div(p):
 
 def p_expr_negate(p):
     '''expr : MINUS expr %prec UMINUS'''
+    p[0] = -p[2]
 
 #--------------------------------------
 
@@ -215,6 +231,7 @@ def p_expr_negate(p):
 
 def p_task(p):
     '''task : offender DO func_name TO args'''
+    print('task')
 
 def p_offender(p):
     '''offender : ID'''
@@ -243,15 +260,19 @@ def p_optargs(p):
 
 def p_assign(p):
     '''assign : lval DICK rval'''
+    variables[p[1]] = p[3]
+    p[0] = None
 
 # note: lval and rval could be
 #  formalized to replace expression
 
 def p_lval(p):
     '''lval : ID'''
+    p[0] = p[1]
 
 def p_rval(p):
     '''rval : expr'''
+    p[0] = p[1]
 
 #--------------------------------------
 
@@ -262,6 +283,14 @@ def p_func_def(p):
 
 def p_end(p):
     '''end : END'''
+
+#--------------------------------------
+
+# print
+
+def p_print(p):
+	'''print : offender SMY expr'''
+	print(p[3])
 
 #--------------------------------------
 
@@ -305,6 +334,7 @@ def p_constant(p):
                 | list
                 | tuple
                 | dict'''
+    p[0] = p[1]
 
 def p_string(p):
     '''string : STRINGA
