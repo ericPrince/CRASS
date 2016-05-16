@@ -88,7 +88,7 @@ t_ID = r'(?!'                    \
      + r')'                      \
      + r'[A-Za-z_][A-Za-z0-9_]*'
 
-print(t_ID)
+#print(t_ID)
 
 #t_ID = r'(?!do|to|fuck|end)[A-Za-z_][A-Za-z0-9_]*'
 
